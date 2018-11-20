@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+	<work>
+		<versioncheck />
+	</work>
+	<version>
+                <unknown>
+                        <uri>http://www.7-zip.org/download.html</uri>
+                        <patterns>
+                                <pattern>Download+7-Zip+(%5B0-9%5C.%5D%2B)+%5C(%5B0-9%5C-%5D%2B%5C)+for+Windows</pattern>
+                        </patterns>
+                </unknown>
+		<known>
+			<pattern>^([0-9\.]+)</pattern>
+		</known>
+	</version>
+</application>
