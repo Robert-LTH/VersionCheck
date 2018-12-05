@@ -16,8 +16,10 @@ function Global:Get-WebFile {
         $Return = $false
         try {
             $TempFileName = New-TemporaryFile
+            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $TempFileName
+            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value ($TempFileName.GetType())
             Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $Uri
-            $Data = Invoke-WebRequest -ErrorAction Stop -Uri $Uri -UseBasicParsing -OutFile $TempFileName.FullName -PassThru
+            $Data = Invoke-WebRequest -ErrorAction Stop -Uri $Uri -UseBasicParsing -OutFile $TempFileName -PassThru
             if ($Data.StatusCode -eq 200) {
                 Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value  "Request was successful!"
                 $Filename = Split-Path -Path $Uri -Leaf
@@ -41,8 +43,8 @@ function Global:Get-WebFile {
                 }
                 try {
                     if ($Return) {
-                        Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value  "Everything looks good, moving '$(TempFileName.FullName)' to '$Destination\$FileName'"
-                        Move-Item -Path $TempFileName.FullName -Destination "$Destination\$Filename" -Force -ErrorAction Stop
+                        Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value  "Everything looks good, moving '$($TempFileName)' to '$Destination\$FileName'"
+                        Move-Item -Path $TempFileName -Destination "$Destination\$Filename" -Force -ErrorAction Stop
                     }
                 } catch {
                     Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "Failed to move file with filename '$Filename': $_"
