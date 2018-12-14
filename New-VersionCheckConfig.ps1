@@ -9,6 +9,8 @@ param(
 . ".\Get-FirstRegexGroupValue.ps1"
 . ".\Write-LogEntry.ps1"
 
+$Global:LogFileName = 'VersionCheck.log'
+
 if ([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::Tls12) {
     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Activating TLS 1.2"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11
