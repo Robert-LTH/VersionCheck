@@ -6,7 +6,7 @@ function Global:Invoke-FindInWebContent {
     )
     begin {
         if ([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::Tls12) {
-            #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Activating TLS 1.2"
+            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Activating TLS 1.2"
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         }
     }
@@ -17,12 +17,12 @@ function Global:Invoke-FindInWebContent {
             #Invoke-FindInWebContent -Uri $CurrentUri -Pattern ([System.Net.WebUtility]::UrlDecode($_))
             #Write-Information $CurrentUri
             try {
-                $Request = Invoke-WebRequest -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
+                $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
             } catch {
                 try {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Switching to TLS 1.1 and trying again"
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11
-                    $Request = Invoke-WebRequest -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
+                    $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
                 } catch {
                     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 "Error: $_"
                 }

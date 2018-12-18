@@ -11,9 +11,9 @@ function Global:Get-FtpDirList {
     $ftpConn.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectoryDetails
 
     # Set this to be a textmode transfer
-    #$ftpConn.UseBinary = $true
+    $ftpConn.UseBinary = $true
     # Set passive transfer
-    #$ftpConn.UsePassive = $true
+    $ftpConn.UsePassive = $true
     # No need for keepalive, we want in and out
     $ftpConn.KeepAlive = $false
     # Timeout in milliseconds, 5 seconds should be enough to list a directory

@@ -9,7 +9,7 @@ param(
 . ".\Get-FirstRegexGroupValue.ps1"
 . ".\Write-LogEntry.ps1"
 
-$Global:LogFileName = 'VersionCheck.log'
+$Global:LogFileName = "New-VersionCheckConfig.log"
 
 if ([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::Tls12) {
     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Activating TLS 1.2"
@@ -48,8 +48,8 @@ function Get-UriMatch {
                 $pattern = $ExampleXML.CreateElement('pattern')
                 $pattern.InnerText = [System.Net.WebUtility]::UrlEncode($DownloadPattern)
                 #$ExampleXML.application.version.unknown.patterns.ReplaceChild($pattern,$ExampleXML.application.version.unknown.patterns.FirstChild)
-                $ExampleXML.application.version.unknown.patterns.AppendChild($pattern) | Out-Null
-                $ExampleXML.application.version.unknown.uri = $DownloadUri
+                $ExampleXML.application.download.patterns.AppendChild($pattern) | Out-Null
+                $ExampleXML.application.download.uri = $DownloadUri
             }
         }
     } catch {

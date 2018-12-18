@@ -14,7 +14,7 @@ function Global:Get-SFLatestReleaseUri {
 
     #>
 
-    $Pattern = "<meta http-equiv=`"refresh`" content=`"5; url=(http[s]?://downloads.sourceforge.net/project/$Project/[\w\/\.\-\?=&;]+)`">"
+    $Pattern = "<meta http-equiv=`"refresh`" content=`"5; url=(http[s]*://downloads.sourceforge.net/project/$Project/[\w\/\.\-\?=&;]+)`">"
 
     Invoke-WebRequest -Uri "https://sourceforge.net/projects/$Project/files/latest/download" -UseBasicParsing | Select-String -Pattern $Pattern | Select-Object -ExpandProperty Matches | Select-Object -ExpandProperty Groups | Select-Object -ExpandProperty Value -Last 1
 

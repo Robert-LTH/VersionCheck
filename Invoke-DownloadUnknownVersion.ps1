@@ -15,62 +15,64 @@ function Global:Invoke-DownloadUnknownVersion {
     )
     process {
         Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value "'$($InputObject.Name)'"
-
-        $CurrentElement = $InputObject.XML.application.download
-        if ($CurrentElement.HasAttributes) {
-            $DownloadType = $CurrentElement.Attributes[0].Value
-        }
-        else {
-            $DownloadType = 'regex'
-        }
-        switch ($DownloadType) {
-            'github' {
-                # Do github stuff
-                #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: github"
-                $Uri = Get-GHLatestRelease -Owner $CurrentElement.Owner -Repository $CurrentElement.Repository -Filter $CurrentElement.Filter -DownloadUri
-                #return
+        $InputObject.XML.application.download | ForEach-Object {
+            $CurrentElement = $_
+            if ($CurrentElement.HasAttributes) {
+                $DownloadType = $CurrentElement.Attributes[0].Value
             }
-            'sourceforge' {
-                # Do SF stuff
-                #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: sourceforge"
-                $Uri = Get-SFLatestReleaseUri -Project $CurrentElement.Project
-                #return
+            else {
+                $DownloadType = 'regex'
             }
-            default {
-                #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: regularexpression"
-                $Uri = Get-RELatestReleaseUri -AppXmlInfo $CurrentElement
+            switch ($DownloadType) {
+                'github' {
+                    # Do github stuff
+                    #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: github"
+                    $Uri = Get-GHLatestRelease -Owner $CurrentElement.Owner -Repository $CurrentElement.Repository -Filter $CurrentElement.Filter -DownloadUri
+                    #return
+                }
+                'sourceforge' {
+                    # Do SF stuff
+                    #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: sourceforge"
+                    $Uri = Get-SFLatestReleaseUri -Project $CurrentElement.Project
+                    #return
+                }
+                default {
+                    #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: regularexpression"
+                    $Uri = Get-RELatestReleaseUri -AppXmlInfo $CurrentElement
+                }
             }
-        }
-        if (-not $Uri) {
-            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Failed to get an Uri for $($InputObject.Name)"
-            break
-        }
-        #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Download Uri for $($InputObject.Name) is '$Uri'"
+            if (-not $Uri) {
+                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Failed to get an Uri ($Uri) for $($InputObject.Name)"
+                break
+            }
+            #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Download Uri for $($InputObject.Name) is '$Uri'"
 
-        $UnknownVersionFolder = "$($InputObject.Path)\$($InputObject.UnknownVersion.String)"
-        $KnownVersionFolder = "$($InputObject.Path)\$($InputObject.KnownVersion.String)"
+            $UnknownVersionFolder = "$($InputObject.Path)\$($InputObject.UnknownVersion.String)"
+            $KnownVersionFolder = "$($InputObject.Path)\$($InputObject.KnownVersion.String)"
 
-        if ((Test-Path -ErrorAction SilentlyContinue -Path $UnknownVersionFolder)) {
-            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 2 -Value "Folder $UnknownVersionFolder already exist! Abort!"
-            break
+            if (-not (Test-Path -ErrorAction SilentlyContinue -Path $UnknownVersionFolder)) {
+                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Prepare PSADT ($($Settings.PSADTSource)) in '$UnknownVersionFolder'"
+                Invoke-PreparePSADT -Destination $UnknownVersionFolder -PSADTSource $Settings.PSADTSource
+                if ((Test-Path -ErrorAction SilentlyContinue -Path "$KnownVersionFolder\Deploy-Application.ps1")) {
+                    Copy-Item -Path "$KnownVersionFolder\Deploy-Application.ps1" -Destination $UnknownVersionFolder
+                    Copy-Item -Path "$KnownVersionFolder\AppDeployToolkit\AppDeployToolkitConfig.xml" -Destination "$UnknownVersionFolder\AppDeployToolkit"
+                }
+            }
+            else {
+                Write-LogEntry -Severity 1 -Value "Folder '$UnknownVersionFolder' already exist, assuming this is an additional download."
+            }
+
+            #New-Item -ErrorAction Stop -ItemType Container -Path $UnknownVersionFolder\Files
+            #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "[Invoke-DownloadUnknownVersion] Format pattern: $($InputObject.XML.application.download.format.pattern)"
+            $Result = Get-WebFile -Uri $Uri -Destination "$UnknownVersionFolder\Files" -Format $InputObject.XML.application.download.format
+            if (-not $Result) {
+                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Failed to get installation file. Cleaning '$UnknownVersionFolder'"
+                Remove-Item -Force -Recurse -Path $UnknownVersionFolder
+                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Removed '$UnknownVersionFolder', aborting due to error."
+                return
+            }
+
+            Write-Output $InputObject
         }
-
-        #New-Item -ErrorAction Stop -ItemType Container -Path $UnknownVersionFolder\Files
-
-        Invoke-PreparePSADT -Destination $UnknownVersionFolder -PSADTSource $Settings.PSADTSource
-        #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "[Invoke-DownloadUnknownVersion] Format pattern: $($InputObject.XML.application.download.format.pattern)"
-        $Result = Get-WebFile -Uri $Uri -Destination "$UnknownVersionFolder\Files" -Format $InputObject.XML.application.download.format
-        if (-not $Result) {
-            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Failed to get installation file. Cleaning '$UnknownVersionFolder'"
-            Remove-Item -Force -Recurse -Path $UnknownVersionFolder
-            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Removed '$UnknownVersionFolder', aborting due to error."
-            return
-        }
-
-        if ((Test-Path -ErrorAction SilentlyContinue -Path "$KnownVersionFolder\Deploy-Application.ps1")) {
-            Copy-Item -Path "$KnownVersionFolder\Deploy-Application.ps1" -Destination $UnknownVersionFolder
-            Copy-Item -Path "$KnownVersionFolder\AppDeployToolkit\AppDeployToolkitConfig.xml" -Destination "$UnknownVersionFolder\AppDeployToolkit"
-        }
-        Write-Output $InputObject
     }
 }

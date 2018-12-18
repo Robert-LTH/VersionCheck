@@ -10,6 +10,7 @@ function Global:Invoke-PreparePSADT {
         throw $_
     }
     if (-not (Test-Path -Path $Destination -ErrorAction SilentlyContinue)) {
+        Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Creating folder '$UnknownVersionFolder')"
         $Folder = New-Item -Path $Destination -ItemType Container
     }
     else {
