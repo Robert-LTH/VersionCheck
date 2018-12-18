@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+        <work>
+                <versioncheck />
+        </work>
+    <version>
+        <unknown>
+                <uri>http://new.abb.com/products/robotics/sv/robotstudio/nedladdningsbara-program</uri>
+                <patterns>
+                        <pattern>RobotStudio_(%5B0-9a-zA-Z%5C.%5D%2B).zip</pattern>
+                </patterns>
+			<format>
+				<string>{0}{2}</string>
+				<pattern>(%5B0-9%5C.%5D%2B)(%5BA-Za-z%5D%2B)(%5B0-9%5D%2B)</pattern>
+			</format>
+	<ignoreversion>6.07.01.1</ignoreversion>
+        </unknown>
+                <known>
+                        <pattern>^([0-9\.]+)</pattern>
+                        <format></format>
+                </known>
+        </version>
+        <download>
+                <uri></uri>
+                <patterns>
+                        <pattern></pattern>
+                </patterns>
+        </download>
+</application>
