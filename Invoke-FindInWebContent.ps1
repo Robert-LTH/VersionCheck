@@ -2,6 +2,8 @@
 function Global:Invoke-FindInWebContent {
     param(
         [System.Xml.XmlElement]$AppXmlInfo,
+        $Uri,
+        $Patterns,
         [switch]$ReturnUri
     )
     begin {
@@ -11,12 +13,21 @@ function Global:Invoke-FindInWebContent {
         }
     }
     process {
-        $CurrentUri = $AppXmlInfo.Uri
-        $AppXmlInfo.Patterns.Pattern | ForEach-Object { 
+        if ($AppXmlInfo) {
+            $CurrentUri = $AppXmlInfo.Uri
+            $_Patterns = $AppXmlInfo.Patterns.Pattern
+        }
+        else {
+            $CurrentUri = $Uri
+            $_Patterns = $Patterns
+        }
+        $_Patterns | ForEach-Object -begin { $i = 1 } {
+            #Write-Debug $_
             #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Find '$([System.Net.WebUtility]::UrlDecode($_))' in data fetched from '$CurrentUri'"
             #Invoke-FindInWebContent -Uri $CurrentUri -Pattern ([System.Net.WebUtility]::UrlDecode($_))
             #Write-Information $CurrentUri
             try {
+                #Write-Debug $CurrentUri
                 $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
             } catch {
                 try {
@@ -35,15 +46,18 @@ function Global:Invoke-FindInWebContent {
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value  "Request for '$($CurrentUri)' was successful"
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value $Request.Content
                 $MatchedContent = $Request.Content | Get-FirstRegexGroupValue -Pattern ([System.Net.WebUtility]::UrlDecode($_))
+                Write-Debug "$MatchedContent"
                 if (-not [string]::IsNullOrEmpty($MatchedContent)) {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug:'$MatchedContent'"
                     if ($ReturnUri.IsPresent -eq $true -and $MatchedContent -notmatch '^http') {
-                        #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "$CurrentUri - $MatchedContent"
-                        $CurrentUri = "$($Request.BaseResponse.ResponseUri.AbsoluteUri.SubString(0,($Request.BaseResponse.ResponseUri.AbsoluteUri.LastIndexOf('/')+1)))$MatchedContent"
-                        #return
+                        $BaseUri = "$($Request.BaseResponse.ResponseUri.Scheme)://$($Request.BaseResponse.ResponseUri.Host)/"
+                        $CurrentUri = "$BaseUri$MatchedContent"
+                        if ($i -eq ($_Patterns.Count)) {
+                            return $CurrentUri
+                        }
                     }
                     else {
-                        Write-Output $MatchedContent
+                        return $MatchedContent
                     }
                 }
                 #else {
@@ -53,6 +67,7 @@ function Global:Invoke-FindInWebContent {
             else {
                 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Request for '$($CurrentUri)' failed with status $($Request.StatusCode)"
             }
+            $i++
         }
     }
 }
