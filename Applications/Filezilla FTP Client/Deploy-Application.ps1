@@ -117,7 +117,7 @@ Try {
 		[string]$installPhase = 'Pre-Installation'
 
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'filezilla=Filezilla FTP Client' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -162,7 +162,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'filezilla=Filezilla FTP Client' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -182,9 +182,11 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		$uninstString = Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\Software\Wow6432Node\microsoft\windows\currentversion\uninstall\Filezilla Client' -Value 'UninstallString'
-		Execute-Process -Path $uninstString -Parameters "/S"
-		Start-Sleep -Seconds 1
+		$uninstString = (Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\Software\Wow6432Node\microsoft\windows\currentversion\uninstall\Filezilla Client' -Value 'UninstallString') -replace '\"'
+		if ($uninstString) {
+			Execute-Process -Path $uninstString -Parameters "/S"
+			Start-Sleep -Seconds 1
+		}
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
