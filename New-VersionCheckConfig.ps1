@@ -8,19 +8,25 @@ param(
 
 . ".\Get-FirstRegexGroupValue.ps1"
 . ".\Write-LogEntry.ps1"
+. "$PSScriptRoot\Invoke-FindInWebContent.ps1"
 
 $Global:LogFileName = "New-VersionCheckConfig.log"
 
 if ([Net.ServicePointManager]::SecurityProtocol -ne [Net.SecurityProtocolType]::Tls12) {
     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Activating TLS 1.2"
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 function Get-UriMatch {
     param(
         $Uri,
         $Pattern
     )
-    $Request = Invoke-WebRequest -ErrorAction SilentlyContinue -Uri $Uri -UseBasicParsing
+    try {
+        $Request = Invoke-WebRequest -ErrorAction Stop -Uri $Uri -UseBasicParsing
+    } catch {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls
+        $Request = Invoke-WebRequest -ErrorAction SilentlyContinue -Uri $Uri -UseBasicParsing
+    }
     if ($Request.StatusCode -eq 200) {
         Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value  "[Get-UriMatch] Request for '$Uri' was successful"
         $Request.Content | Get-FirstRegexGroupValue -Pattern $Pattern
@@ -33,7 +39,9 @@ function Get-UriMatch {
 [xml]$ExampleXML = Get-Content -Path "$PSScriptRoot\example.xml"
  try {
         if ($VersionUri) {
-            $VersionMatch = Get-UriMatch -Uri $VersionUri -Pattern $VersionPattern
+            #$VersionMatch = Get-UriMatch -Uri $VersionUri -Pattern $VersionPattern
+            $VersionMatch = Invoke-FindInWebContent -Uri $VersionUri -Patterns ([System.Net.WebUtility]::UrlEncode($VersionPattern))
+            #Write-Debug $VersionMatch
             if ($VersionMatch) {
                 $pattern = $ExampleXML.CreateElement('pattern')
                 $pattern.InnerText = [System.Net.WebUtility]::UrlEncode($VersionPattern)
@@ -43,7 +51,7 @@ function Get-UriMatch {
             }
         }
         if ($DownloadUri) {
-            $DownloadMatch = Get-UriMatch -Uri $DownloadUri -Pattern $DownloadPattern
+            $DownloadMatch = Invoke-FindInWebContent -Uri $DownloadUri -Patterns ([System.Net.WebUtility]::UrlEncode($DownloadPattern))
             if ($DownloadMatch) {
                 $pattern = $ExampleXML.CreateElement('pattern')
                 $pattern.InnerText = [System.Net.WebUtility]::UrlEncode($DownloadPattern)
