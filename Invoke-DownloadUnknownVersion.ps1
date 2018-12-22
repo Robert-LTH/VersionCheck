@@ -1,5 +1,6 @@
 . "$PSScriptRoot\Get-RELatestReleaseUri.ps1"
 . "$PSScriptRoot\Get-GHLatestRelease.ps1"
+. "$PSScriptRoot\Get-FHLatestRelease.ps1"
 . "$PSScriptRoot\Get-SFLatestReleaseUri.ps1"
 . "$PSScriptRoot\Invoke-PreparePSADT.ps1"
 . "$PSScriptRoot\Get-WebFile.ps1"
@@ -28,6 +29,12 @@ function Global:Invoke-DownloadUnknownVersion {
                     # Do github stuff
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: github"
                     $Uri = Get-GHLatestRelease -Owner $CurrentElement.Owner -Repository $CurrentElement.Repository -Filter $CurrentElement.Filter -DownloadUri
+                    #return
+                }
+                'fosshub' {
+                    # Do github stuff
+                    #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: github"
+                    $Uri = Get-FHLatestRelease -SearchTerm $CurrentElement.Project -Filter $CurrentElement.Filter -DownloadUri
                     #return
                 }
                 'sourceforge' {
