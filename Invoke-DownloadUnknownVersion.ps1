@@ -25,6 +25,9 @@ function Global:Invoke-DownloadUnknownVersion {
                 $DownloadType = 'regex'
             }
             switch ($DownloadType) {
+                'direct' {
+                    $Uri = $CurrentElement.Uri
+                }
                 'github' {
                     # Do github stuff
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "DownloadType: github"
@@ -50,7 +53,7 @@ function Global:Invoke-DownloadUnknownVersion {
             }
             if (-not $Uri) {
                 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Failed to get an Uri ($Uri) for $($InputObject.Name)"
-                break
+                return
             }
             #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Download Uri for $($InputObject.Name) is '$Uri'"
 
@@ -63,6 +66,7 @@ function Global:Invoke-DownloadUnknownVersion {
                 if ((Test-Path -ErrorAction SilentlyContinue -Path "$KnownVersionFolder\Deploy-Application.ps1")) {
                     Copy-Item -Path "$KnownVersionFolder\Deploy-Application.ps1" -Destination $UnknownVersionFolder
                     Copy-Item -Path "$KnownVersionFolder\AppDeployToolkit\AppDeployToolkitConfig.xml" -Destination "$UnknownVersionFolder\AppDeployToolkit"
+                    Copy-Item -Recurse -Path "$KnownVersionFolder\SupportFiles\*" -Destination "$UnknownVersionFolder\SupportFiles"
                 }
             }
             else {
