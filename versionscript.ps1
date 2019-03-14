@@ -1,8 +1,12 @@
 ﻿param(
+    [string]$Path,
     [switch]$DoDownload,
     [switch]$SendToTeams,
     [switch]$Debug
 )
+
+$SavedProgressPreference = $ProgressPreference
+$ProgressPreference = "SilentlyContinue"
 
 . "$PSScriptRoot\Get-ScriptSettings.ps1"
 . "$PSScriptRoot\Write-LogEntry.ps1"
@@ -42,11 +46,23 @@ $Settings = Get-ScriptSettings -RegistryPath $ScriptSettingsRegistryPath
 
 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Will traverse '$($Settings.ApplicationShare)'"
 try {
-    $UnknownVersions = Get-ChildItem -Recurse -Depth 1 -ErrorAction Stop -Path $Settings.ApplicationShare -Filter 'AppInfo.xml' `
-                            | Read-AppInfoXMLFile `
-                                | Where-Object { $_.XML.application.work.Item('versioncheck') -or $_.XML.application.work.Item('version') } `
-                                    | Invoke-VersionCheck `
-                                        | Where-Object { $_.KnownVersion.Object -lt $_.UnknownVersion.Object }
+    if ([string]::IsNullOrEmpty($Path)) {
+        $UnknownVersions = Get-ChildItem -Recurse -Depth 1 -ErrorAction Stop -Path $Settings.ApplicationShare -Filter 'AppInfo.xml' `
+                                | Read-AppInfoXMLFile `
+                                    | Where-Object { $_.XML.application.work.Item('versioncheck') -or $_.XML.application.work.Item('version') } `
+                                        | Invoke-VersionCheck `
+                                            | Where-Object { $_.KnownVersion.Object -lt $_.UnknownVersion.Object }
+    }
+    else {
+        if ([IO.Path]::GetExtension($Path) -eq '.xml') {
+            $UnknownVersions = Read-AppInfoXMLFile -FullName $Path | Where-Object { $_.XML.application.work.Item('versioncheck') -or $_.XML.application.work.Item('version') } `
+            | Invoke-VersionCheck `
+                | Where-Object { $_.KnownVersion.Object -lt $_.UnknownVersion.Object }
+        }
+        else {
+            Write-LogEntry -Severity 3 -Value "File is not an xml!"
+        }
+    }
 } catch {
     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value $_.InvocationInfo.Line
     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Error: $_"
@@ -79,8 +95,6 @@ if ($SendToTeams.IsPresent) {
     }
 }
 elseif ($DoDownload.IsPresent) {
-    #$UnknownVersions.XML.application.download.format.pattern
-    #return
     $UnknownVersions `
         | Where-Object { $_.XML.application.work.Item('download') } `
             | Invoke-DownloadUnknownVersion -Settings $Settings | ForEach-Object -Begin { Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "The following were downloaded:" } {
@@ -97,3 +111,5 @@ if ($Debug.IsPresent) {
 }
 
 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "VersionCheck end"
+
+$ProgressPreference = $SavedProgressPreference
