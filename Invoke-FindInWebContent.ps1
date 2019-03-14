@@ -51,7 +51,12 @@ function Global:Invoke-FindInWebContent {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug:'$MatchedContent'"
                     if ($ReturnUri.IsPresent -eq $true -and $MatchedContent -notmatch '^http') {
                         $BaseUri = "$($Request.BaseResponse.ResponseUri.Scheme)://$($Request.BaseResponse.ResponseUri.Host)/"
+                        if ($Request.BaseResponse.ResponseUri.PathAndQuery -notcontains $MatchedContent) {
+                            $BaseUri += $Request.BaseResponse.ResponseUri.AbsolutePath
+                        }
+                        #$BaseUri = $Request.BaseResponse.ResponseUri
                         $CurrentUri = "$BaseUri$MatchedContent"
+                        #Write-LogEntry -EntryType CMLogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "$i / $($_Patterns.Count)"
                         if ($i -eq ($_Patterns.Count)) {
                             return $CurrentUri
                         }
