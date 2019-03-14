@@ -16,12 +16,15 @@ function Global:Get-WebFile {
         $Return = $false
         try {
             $TempFileName = New-TemporaryFile
-            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $TempFileName
-            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value ($TempFileName.GetType())
-            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $Uri
+            #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $TempFileName
+            #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value ($TempFileName.GetType())
+            #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $Uri
+            $SavedProgressPreference = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue"
             $Data = Invoke-WebRequest -ErrorAction Stop -Uri $Uri -UseBasicParsing -OutFile $TempFileName -PassThru
+            $ProgressPreference = $SavedProgressPreference
             if ($Data.StatusCode -eq 200) {
-                Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value  "Request was successful!"
+                #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value  "Request was successful!"
                 $Filename = Split-Path -Path $Uri -Leaf
                 $BannedCharacters = '\?'
                 if ($FileName -notmatch $BannedCharacters) {
@@ -40,6 +43,11 @@ function Global:Get-WebFile {
                     else {
                         Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "'$FileName' No formatting done!"
                     }
+                }
+                if ([string]::IsNullOrEmpty(([IO.PATH]::GetExtension($Filename)))) {
+                    # Guess that we have been redirected and use the last part of the uri
+                    Write-LogEntry -Component $MyInvocation.MyCommand -Severity 2 -Value "No extension detected in filename, try to use ResponseUri ($($Data.BaseResponse.ResponseUri.OriginalString))"
+                    $Filename = Split-Path -Path $Data.BaseResponse.ResponseUri.OriginalString -Leaf
                 }
                 try {
                     if ($Return) {
