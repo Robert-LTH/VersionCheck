@@ -7,6 +7,7 @@
     -->
   <work>
     <version />
+    <download />
   </work>
   <version>
     <!--
@@ -31,9 +32,10 @@
     </known>
   </version>
   <download>
-    <uri>http[s]://url.to.some.software.info</uri>
+    <uri>https://www.stunnel.org/downloads.html</uri>
     <patterns>
       <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
+      <pattern>(downloads%2Fstunnel-%5B0-9%5C.%5D%2B-win64-installer.exe)</pattern>
     </patterns>
   </download>
 </application>
