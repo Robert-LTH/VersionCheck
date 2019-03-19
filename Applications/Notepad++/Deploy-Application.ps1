@@ -62,13 +62,13 @@ Try {
 	##*===============================================
 	## Variables: Application
 	[string]$appVendor = ''
-	[string]$appName = 'FileZilla FTP Client'
+	[string]$appName = 'Notepad++'
 	[string]$appVersion = ''
 	[string]$appArch = ''
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '02/12/2017'
+	[string]$appScriptDate = '2019-01-08'
 	[string]$appScriptAuthor = 'Robert Johnsson Lunds universitet'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -117,13 +117,13 @@ Try {
 		[string]$installPhase = 'Pre-Installation'
 
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -AllowDeferCloseApps -CloseApps 'notepad++' -MinimizeWindows $false -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
 		
 		## <Perform Pre-Installation tasks here>
-		
+		Remove-Folder -Path "$envProgramFiles\Notepad++"
 		
 		##*===============================================
 		##* INSTALLATION 
@@ -137,8 +137,8 @@ Try {
 		}
 		
 		## <Perform Installation tasks here>
-		Get-ChildItem -Path "$dirFiles" -Filter "FileZilla*.exe" | ForEach-Object {
-			Execute-Process -Path $_.FullName -Parameters "/S"
+		Get-ChildItem -Path $dirFiles -Filter 'npp*x64.exe' | ForEach-Object {
+			Execute-Process -Path $_.FullName -Parameters '/S'
 		}
 		
 		##*===============================================
@@ -147,9 +147,20 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		## <Perform Post-Installation tasks here>
-		Move-Item -ErrorAction SilentlyContinue -Path "$envCommonStartMenuPrograms\FileZilla FTP Client\FileZilla.lnk" -Destination "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
-		Remove-Folder -Path "$envCommonStartMenuPrograms\FileZilla FTP Client"
-		Copy-File -Path "$dirFiles\fzdefaults.xml" -Destination "$envProgramFiles\FileZilla FTP Client\"
+		Write-Log "Disable updater"
+		Move-Item -Force -Path "$envProgramFiles\Notepad++\updater" -Destination "$envProgramFiles\Notepad++\updater_disabled"
+		
+		Copy-File -Path "$dirSupportFiles\config\config.model.xml" -Destination "$envProgramFiles\Notepad++"
+		# 7.6.2: https://notepad-plus-plus.org/community/topic/16645/new-plugins-home-where-notepad-will-load-from
+		# 7.6.3: Move plugins home from %ProgramData% to %ProgramFiles% for the sake of security.
+        Copy-File -Recurse -Path "$dirSupportFiles\plugins\*" -Destination "$envProgramFiles\Notepad++\plugins"
+        Copy-File -Recurse -Path "$dirSupportFiles\themes\*" -Destination "$envProgramFiles\Notepad++\themes"
+        Execute-Process -Path 'regsvr32' -Parameters "/s /u `"$envProgramFiles\Notepad++\NppShell_06.dll`""
+		Refresh-Desktop
+
+		Write-Log "Fix startmenu"
+        Move-Item -Path "$envCommonStartMenuPrograms\Notepad++\Notepad++.lnk" -Destination $envCommonStartMenuPrograms
+        Remove-Folder -Path "$envCommonStartMenuPrograms\Notepad++"
 
 		## Display a message at the end of the install
 		#If (-not $useDefaultMsi) { Show-InstallationPrompt -Message "$appVendor $appName $appVersion installerades." -ButtonRightText 'OK' -Icon Information -NoWait }
@@ -162,13 +173,13 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -AllowDeferCloseApps -CloseApps 'notepad++' -MinimizeWindows $false -DeferTimes 3
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
 		
 		## <Perform Pre-Uninstallation tasks here>
-		
+
 		
 		##*===============================================
 		##* UNINSTALLATION
@@ -182,11 +193,8 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		$uninstString = (Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\Software\Wow6432Node\microsoft\windows\currentversion\uninstall\Filezilla Client' -Value 'UninstallString') -replace '\"'
-		if ($uninstString) {
-			Execute-Process -Path $uninstString -Parameters "/S"
-			Start-Sleep -Seconds 1
-		}
+		Execute-Process -Path 'regsvr32' -Parameters "/s /u `"$envProgramFiles\Notepad++\NppShell_06.dll`""
+        Refresh-Desktop
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -194,8 +202,10 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
-		Remove-Folder -Path "C:\Program Files\FileZilla FTP Client"
-		Remove-File -Path "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
+		Remove-Folder -Path "$envProgramfiles\Notepad++"
+		# Disabled for now
+		#Remove-Folder -Path "$envProgramData\Notepad++"
+        Remove-File -Path "$envCommonStartMenuPrograms\Notepad++.lnk"
 		
 	}
 	

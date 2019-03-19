@@ -20,11 +20,14 @@
         </format>
         -->
     <unknown>
-      <uri>https://www.stunnel.org/downloads.html</uri>
+      <uri>https://www.xnview.com/en/xnview/</uri>
       <patterns>
         <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the version -->
-        <pattern>stunnel-(%5B0-9%5C.%5D%2B)-win64-installer.exe</pattern>
+        <pattern>Version+(%5B0-9%5C.%5D%2B)</pattern>
       </patterns>
+      <!-- Add as many ignoreversion as you like, versions listed here will be ignored.
+			<ignoreversion>1.0</ignoreversion>
+			-->
     </unknown>
     <!-- We assume that the folders with known versions are in the same folder as this file -->
     <known>
@@ -32,10 +35,10 @@
     </known>
   </version>
   <download>
-    <uri>https://www.stunnel.org/downloads.html</uri>
+    <uri>https://www.xnview.com/en/xnview/</uri>
     <patterns>
       <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
-      <pattern>(downloads%2Fstunnel-%5B0-9%5C.%5D%2B-win64-installer.exe)</pattern>
+      <pattern>(https%3A%2F%2Fdownload.xnview.com%2FXnView-win-full.exe)</pattern>
     </patterns>
   </download>
 </application>

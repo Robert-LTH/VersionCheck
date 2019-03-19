@@ -62,13 +62,13 @@ Try {
 	##*===============================================
 	## Variables: Application
 	[string]$appVendor = ''
-	[string]$appName = 'FileZilla FTP Client'
+	[string]$appName = ''
 	[string]$appVersion = ''
 	[string]$appArch = ''
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '02/12/2017'
+	[string]$appScriptVersion = '1.0'
+	[string]$appScriptDate = '2019-03-19'
 	[string]$appScriptAuthor = 'Robert Johnsson Lunds universitet'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -116,8 +116,13 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
+		<#
+		# Robert (eit-rej) Johnsson
+		# Hämta namnet på alla exe och formatera en sträng lämplig för -CloseApps - Ändra SÖKVÄG till mappen där applikationen har sina filer
+		# "'$((Get-ChildItem -Path "SÖKVÄG" -Filter '*.exe' | Select-Object -ExpandProperty Name) -replace '.exe' -join ',')'"
+		#>
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'putty,pageant,pscp,psftp,puttygen' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -137,9 +142,7 @@ Try {
 		}
 		
 		## <Perform Installation tasks here>
-		Get-ChildItem -Path "$dirFiles" -Filter "FileZilla*.exe" | ForEach-Object {
-			Execute-Process -Path $_.FullName -Parameters "/S"
-		}
+		
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -147,10 +150,11 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		## <Perform Post-Installation tasks here>
-		Move-Item -ErrorAction SilentlyContinue -Path "$envCommonStartMenuPrograms\FileZilla FTP Client\FileZilla.lnk" -Destination "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
-		Remove-Folder -Path "$envCommonStartMenuPrograms\FileZilla FTP Client"
-		Copy-File -Path "$dirFiles\fzdefaults.xml" -Destination "$envProgramFiles\FileZilla FTP Client\"
-
+		$PuttyStartMenuDir = "$envCommonStartMenuPrograms\Putty (64-bit)"
+		Move-Item -Path "$PuttyStartMenuDir\PuTTY.lnk" -Destination $envCommonStartMenuPrograms
+        Remove-Folder -Path $PuttyStartMenuDir
+		Remove-File -Path "$envCommonDesktop\PuTTY (64-bit).lnk"
+		
 		## Display a message at the end of the install
 		#If (-not $useDefaultMsi) { Show-InstallationPrompt -Message "$appVendor $appName $appVersion installerades." -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
@@ -162,7 +166,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'putty,pageant,pscp,psftp,puttygen' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -182,11 +186,7 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		$uninstString = (Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\Software\Wow6432Node\microsoft\windows\currentversion\uninstall\Filezilla Client' -Value 'UninstallString') -replace '\"'
-		if ($uninstString) {
-			Execute-Process -Path $uninstString -Parameters "/S"
-			Start-Sleep -Seconds 1
-		}
+		
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -194,8 +194,7 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
-		Remove-Folder -Path "C:\Program Files\FileZilla FTP Client"
-		Remove-File -Path "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
+		Remove-File -Path "$envCommonStartMenuPrograms\PuTTY.lnk"
 		
 	}
 	

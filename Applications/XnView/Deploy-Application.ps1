@@ -1,11 +1,6 @@
 ﻿<#
 .SYNOPSIS
 	This script performs the installation or uninstallation of an application(s).
-	# LICENSE #
-	PowerShell App Deployment Toolkit - Provides a set of functions to perform common application deployment tasks on Windows. 
-	Copyright (C) 2017 - Sean Lillis, Dan Cunningham, Muhammad Mashwani, Aman Motazedian.
-	This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
-	You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 .DESCRIPTION
 	The script is provided as a template to perform an install or uninstall of an application(s).
 	The script either performs an "Install" deployment type or an "Uninstall" deployment type.
@@ -62,14 +57,14 @@ Try {
 	##*===============================================
 	## Variables: Application
 	[string]$appVendor = ''
-	[string]$appName = 'FileZilla FTP Client'
+	[string]$appName = 'XNView'
 	[string]$appVersion = ''
-	[string]$appArch = ''
+	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '02/12/2017'
-	[string]$appScriptAuthor = 'Robert Johnsson Lunds universitet'
+	[string]$appScriptVersion = '2.0.0'
+	[string]$appScriptDate = '2018-08-27'
+	[string]$appScriptAuthor = 'ldc-pva'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = ''
@@ -83,8 +78,8 @@ Try {
 	
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.7.0'
-	[string]$deployAppScriptDate = '02/13/2018'
+	[version]$deployAppScriptVersion = [version]'3.6.9'
+	[string]$deployAppScriptDate = '02/12/2017'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 	
 	## Variables: Environment
@@ -115,12 +110,12 @@ Try {
 		##* PRE-INSTALLATION
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
-
+		
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -AllowDeferCloseApps 'xnview' -MinimizeWindows $false -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
-		Show-InstallationProgress
+		#Show-InstallationProgress
 		
 		## <Perform Pre-Installation tasks here>
 		
@@ -137,9 +132,7 @@ Try {
 		}
 		
 		## <Perform Installation tasks here>
-		Get-ChildItem -Path "$dirFiles" -Filter "FileZilla*.exe" | ForEach-Object {
-			Execute-Process -Path $_.FullName -Parameters "/S"
-		}
+		Execute-Process -Path "$dirFiles\XnView-win-full.exe" -Parameters '/silent' -WindowStyle 'Hidden'
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -147,12 +140,12 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		## <Perform Post-Installation tasks here>
-		Move-Item -ErrorAction SilentlyContinue -Path "$envCommonStartMenuPrograms\FileZilla FTP Client\FileZilla.lnk" -Destination "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
-		Remove-Folder -Path "$envCommonStartMenuPrograms\FileZilla FTP Client"
-		Copy-File -Path "$dirFiles\fzdefaults.xml" -Destination "$envProgramFiles\FileZilla FTP Client\"
+        Move-Item -Path "$envCommonStartMenuPrograms\XnView\XnView.lnk" -Destination "$envCommonStartMenuPrograms\XnView.lnk"
+        Remove-Folder "$envCommonStartMenuPrograms\XnView"
+        Copy-File -Path "$dirFiles\xnview.ini" -Destination "$envProgramFilesX86\xnview\xnview.ini"
 
 		## Display a message at the end of the install
-		#If (-not $useDefaultMsi) { Show-InstallationPrompt -Message "$appVendor $appName $appVersion installerades." -ButtonRightText 'OK' -Icon Information -NoWait }
+		#If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -162,10 +155,10 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'filezilla="Filezilla FTP Client"' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -AllowDeferCloseApps 'xnview' -MinimizeWindows $false -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
-		Show-InstallationProgress
+		#Show-InstallationProgress
 		
 		## <Perform Pre-Uninstallation tasks here>
 		
@@ -182,11 +175,7 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		$uninstString = (Get-RegistryKey -Key 'HKEY_LOCAL_MACHINE\Software\Wow6432Node\microsoft\windows\currentversion\uninstall\Filezilla Client' -Value 'UninstallString') -replace '\"'
-		if ($uninstString) {
-			Execute-Process -Path $uninstString -Parameters "/S"
-			Start-Sleep -Seconds 1
-		}
+        Execute-Process -Path "$envProgramFilesX86\XnView\unins000.exe" -Parameters "/silent"
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -194,8 +183,6 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
-		Remove-Folder -Path "C:\Program Files\FileZilla FTP Client"
-		Remove-File -Path "$envCommonStartMenuPrograms\FileZilla FTP Client.lnk"
 		
 	}
 	
@@ -213,3 +200,42 @@ Catch {
 	Show-DialogBox -Text $mainErrorMessage -Icon 'Stop'
 	Exit-Script -ExitCode $mainExitCode
 }
+# SIG # Begin signature block
+# MIIG5gYJKoZIhvcNAQcCoIIG1zCCBtMCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcQ7jkQGQ3WtJ8RpH7SRoEvYi
+# 6nWgggQAMIID/DCCAuSgAwIBAgIJAO5U79VnHqDRMA0GCSqGSIb3DQEBCwUAMIGg
+# MQswCQYDVQQGEwJTRTEMMAoGA1UECAwDIiAiMRowGAYDVQQKDBFMdW5kcyB1bml2
+# ZXJzaXRldDEeMBwGA1UECwwVRGF0b3JkcmlmdGdydXBwZW4gTFRIMSIwIAYDVQQD
+# DBlEYXRvcmRyaWZ0Z3J1cHBlbiBMVEggQ0EzMSMwIQYJKoZIhvcNAQkBFhRjZXJ0
+# LWF1dGhAZGRnLmx0aC5zZTAeFw0xNzEwMjQxNDAwMTVaFw0yMjEwMjMxNDAwMTVa
+# MGMxCzAJBgNVBAYTAlNFMRowGAYDVQQKExFMdW5kcyB1bml2ZXJzaXRldDEeMBwG
+# A1UECxMVRGF0b3JkcmlmdGdydXBwZW4gTFRIMRgwFgYDVQQDEw9Sb2JlcnQgSm9o
+# bnNzb24wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCrcj/KRJQOdHp2
+# qReAK/4I3OyUL7301+z6X8Ci5c3aQRArXkY31uYJ9O4eS8v9yuSSrAs927giEp2C
+# 2FTFxzYJWyglTKDrWsAFlGgkM5DUuiQ0qfILbXSHRG5vEgyIZamMym65CSm87D4l
+# OuxTxTNv+hJ5v5wR+9Ioec1UH49/InxKrAcqI7HV8it18bGzAMGka0UgINuQ1xQr
+# /m6FJ7YNw0Z4KH1pNxH7qf/Hs5RnJFFN9Aw4WEPTkuZ0LwbQYm2/s/Yu+XM9S8Qz
+# 3zgwGvPqSXa+CLu4rcJs2Ig9x4hMwzsL2z8X16k5H/evqe+pHcKc4bfT/s7f+dTD
+# I+z8YrtbAgMBAAGjdTBzMA4GA1UdDwEB/wQEAwIHgDAJBgNVHRMEAjAAMBYGA1Ud
+# JQEB/wQMMAoGCCsGAQUFBwMDMB0GA1UdDgQWBBRXT748LxZOgzxfGiFJHyxk7TYz
+# tzAfBgNVHSMEGDAWgBTUREp7/SpA2dVwFVbl8bjpQh6fqDANBgkqhkiG9w0BAQsF
+# AAOCAQEATyI/AwH7b6pun8YOiHVurUD1or/gnh0V7l/AjTmL4cvzAeP89DoOmWv7
+# uw9v2B0h22C94nyZYbURols6tISAY3g0w/2NweBD5S2jRsba9b2+Rs4i5hRNPIbG
+# eZ25aSkFCEggqCwfnPguRJdTIUiAwS+QWKY4r219/jNlr1W+ebCuvXGf8noUbpS4
+# 7e2PJl6q4KHXiowtnW6XCMSGeIs4wNH0uRzNKIkM5BMwh6COCp8A8h7Vm6IBwAVA
+# Bwz1b7zzmyEaewbIYw5nO3B95O/eO3mljhpGPx8PNhYAZqmcCR0DMDcdJkcFv1nB
+# 2CcDJxXxFFAG6UFYeJgZLZv6Z+RllzGCAlAwggJMAgEBMIGuMIGgMQswCQYDVQQG
+# EwJTRTEMMAoGA1UECAwDIiAiMRowGAYDVQQKDBFMdW5kcyB1bml2ZXJzaXRldDEe
+# MBwGA1UECwwVRGF0b3JkcmlmdGdydXBwZW4gTFRIMSIwIAYDVQQDDBlEYXRvcmRy
+# aWZ0Z3J1cHBlbiBMVEggQ0EzMSMwIQYJKoZIhvcNAQkBFhRjZXJ0LWF1dGhAZGRn
+# Lmx0aC5zZQIJAO5U79VnHqDRMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
+# CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQsyyVOVQgIt76rwUUI
+# ER/XTW8DxTANBgkqhkiG9w0BAQEFAASCAQCE/3cG8BF41COF4dLXlCwWsRHzqqEf
+# Df+44JilQlMXuD65aseL7N4TwuNniAMTsUsB1z54Gq26xtTUbYzDg2d9HP1Q4KfI
+# HgMptYwPmGygEskopNvjgNGW7wdXOBa0xp7vf6HhmJGWObcu3A+I8xmJ2wHPRM8R
+# 0PLELF8NqY/w2xy9jsEsWhHmX/6UqXODcHD2wyMsuIGlj8e7Mee4sMzY/GkAuApi
+# feha5zPbnalGRCSidsflDao9k2x+hCVuRnj/VfRfG+NSBCzsuyubmV3PHgb6i5J1
+# 1hA7rwa1xKqj14uiDoa++zYL4eHvawqpep7Kxq4TqlFxkWOnjHCk8DcR
+# SIG # End signature block
