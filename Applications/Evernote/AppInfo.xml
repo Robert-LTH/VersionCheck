@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <!--
+        Select what is enabled for this application, valid options:
+          * version
+          * download
+    -->
+  <work>
+    <version />
+    <download />
+  </work>
+  <version>
+    <!--
+            If the version needs to be formatted before its compared we use the format-tag. If we dont need to do that we need to remove it
+            string with placeholders per group found by pattern
+            URL encoded pattern
+        <format>
+            <string></string>
+            <pattern></pattern>
+        </format>
+        -->
+    <unknown>
+      <uri>https://evernote.com/download</uri>
+      <patterns>
+        <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the version -->
+        <pattern>Evernote_(%5B0-9%5C.%5D%2B).exe</pattern>
+      </patterns>
+      <!-- Add as many ignoreversion as you like, versions listed here will be ignored.
+			<ignoreversion>1.0</ignoreversion>
+			-->
+    </unknown>
+    <!-- We assume that the folders with known versions are in the same folder as this file -->
+    <known>
+      <pattern>^([0-9\.]+)</pattern>
+    </known>
+  </version>
+  <download>
+    <uri>https://evernote.com/download</uri>
+    <patterns>
+      <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
+      <pattern>(https%3A%2F%2F.*%2FEvernote_%5B0-9%5C.%5D%2B.exe)</pattern>
+    </patterns>
+  </download>
+  <!--
+	<download type="github">
+		<owner></owner>
+		<repository></repository>
+		<filter></filter>
+	</download>
+	-->
+</application>
