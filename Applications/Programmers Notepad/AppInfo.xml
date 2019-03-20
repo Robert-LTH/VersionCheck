@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application name="7-Zip">
+	<work>
+		<versioncheck />
+	</work>
+	<version>
+                <unknown>
+                        <uri>https://github.com/simonsteele/pn/releases</uri>
+                        <patterns>
+                                <pattern>%22%2Fsimonsteele%2Fpn%2Freleases%2Ftag%2Fv(%5B0-9%5C.%5D%2B)</pattern>
+                        </patterns>
+                        <format></format>
+                </unknown>
+		<known>
+			<pattern>^([0-9\.]+)</pattern>
+			<format></format>
+		</known>
+	</version>
+	<download>	
+		<uri></uri>
+		<patterns>
+			<pattern>abc</pattern>
+		</patterns>
+	</download>
+</application>

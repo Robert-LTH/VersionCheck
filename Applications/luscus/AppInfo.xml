@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+	<work>
+		<versioncheck />
+		<download />
+	</work>
+	<version>
+		<unknown>
+			<uri>https://sourceforge.net/projects/luscus/files/</uri>
+			<patterns>
+				<pattern>luscus_(%5B0-9%5C.%5D%2B)_windows.zip</pattern>
+			</patterns>
+			<format></format>
+		</unknown>
+		<known>
+			<pattern>^([0-9\.]+)</pattern>
+			<format></format>
+		</known>
+	</version>
+	<download type="sourceforge">
+		<format>
+			<string>{0}</string>
+			<pattern>(luscus_%5B0-9%5C.%5D%2B_windows.zip)</pattern>
+		</format>
+		<project>luscus</project>
+	</download>
+</application>

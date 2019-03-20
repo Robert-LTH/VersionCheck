@@ -62,14 +62,14 @@ Try {
 	##*===============================================
 	## Variables: Application
 	[string]$appVendor = ''
-	[string]$appName = ''
+	[string]$appName = 'Wireshark'
 	[string]$appVersion = ''
 	[string]$appArch = ''
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '02/12/2017'
-	[string]$appScriptAuthor = 'Robert Johnsson - Lunds universitet'
+	[string]$appScriptVersion = '1.0'
+	[string]$appScriptDate = '2019-03-20'
+	[string]$appScriptAuthor = 'Robert Johnsson Lunds universitet'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = ''
@@ -116,13 +116,19 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
+		<#
+		# Robert (eit-rej) Johnsson
+		# Hämta namnet på alla exe och formatera en sträng lämplig för -CloseApps - Ändra SÖKVÄG till mappen där applikationen har sina filer
+		# "'$((Get-ChildItem -Path "SÖKVÄG" -Filter '*.exe' | Select-Object -ExpandProperty Name) -replace '.exe' -join ',')'"
+		#>
 		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps '7z,7zFM,7zG' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'capinfos,dftest,dumpcap,editcap,mergecap,mmdbresolve,rawshark,reordercap,text2pcap,tshark,uninstall,Wireshark' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
 		
 		## <Perform Pre-Installation tasks here>
+		
 		
 		##*===============================================
 		##* INSTALLATION 
@@ -136,7 +142,9 @@ Try {
 		}
 		
 		## <Perform Installation tasks here>
-		
+		Get-ChildItem -Path $dirFiles -Filter 'Wireshark*.exe' | ForEach-Object {
+			Execute-Process -Path $_.FullName -Parameters '/S'
+		}
 		
 		##*===============================================
 		##* POST-INSTALLATION
@@ -144,16 +152,7 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 		
 		## <Perform Post-Installation tasks here>
-		# 7-Zip does not use the language of the userinterface but we want that.
-		[scriptblock]$HKCURegistrySettings = {
-            Set-RegistryKey -Key 'HKCU\Software\7-Zip' -Name 'Lang' -Value "$currentUILanguage" -Type String -SID $UserProfile.SID
-        }
-        Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
-        
-		$AppStartMenuProgramsFolder = "$envCommonStartMenuPrograms\7-Zip"
-        Move-Item -Force -Path "$AppStartMenuProgramsFolder\7-Zip File Manager.lnk" -Destination $envCommonStartMenuPrograms
-        Remove-Item -Force -Recurse $AppStartMenuProgramsFolder
-
+		Copy-File -Path "$dirSupportFiles\preferences" -Destination "$envProgramFiles\Wireshark"
 		## Display a message at the end of the install
 		#If (-not $useDefaultMsi) { Show-InstallationPrompt -Message "$appVendor $appName $appVersion installerades." -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
@@ -165,7 +164,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 		
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps '7z,7zFM,7zG' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
+		Show-InstallationWelcome -CloseApps 'capinfos,dftest,dumpcap,editcap,mergecap,mmdbresolve,rawshark,reordercap,text2pcap,tshark,uninstall,Wireshark' -AllowDeferCloseApps -DeferTimes 3 -CheckDiskSpace
 		
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -185,7 +184,9 @@ Try {
 		}
 		
 		# <Perform Uninstallation tasks here>
-		
+		$RegPath = 'Registry::HKEY_LOCAL_MACHINE\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Wireshark'
+		$UninstallString = (Get-ItemProperty -Path $RegPath -Name 'UninstallString' | Select-Object -ExpandProperty  'UninstallString') -replace '"'
+		Execute-Process -Path $UninstallString -Parameters '/S'
 		
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -193,7 +194,7 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 		
 		## <Perform Post-Uninstallation tasks here>
-		
+		Remove-Folder -Path "$envProgramFiles\Wireshark"
 		
 	}
 	

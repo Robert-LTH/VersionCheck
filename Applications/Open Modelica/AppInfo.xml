@@ -7,7 +7,6 @@
     -->
   <work>
     <version />
-    <download />
   </work>
   <version>
     <!--
@@ -20,10 +19,10 @@
         </format>
         -->
     <unknown>
-      <uri>http://www.7-zip.org/download.html</uri>
+      <uri>https://openmodelica.org/download/download-windows</uri>
       <patterns>
         <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the version -->
-        <pattern>Download+7-Zip+(%5B0-9%5C.%5D%2B)+%5C(%5B0-9-%5D%2B%5C)+for+Windows</pattern>
+        <pattern>%3E(%5B0-9%5C.%5D%2B)%3Cbr+%2F%3E</pattern>
       </patterns>
       <!-- Add as many ignoreversion as you like, versions listed here will be ignored.
 			<ignoreversion>1.0</ignoreversion>
@@ -35,10 +34,10 @@
     </known>
   </version>
   <download>
-    <uri>https://www.7-zip.org/download.html</uri>
+    <uri>https://openmodelica.org/download/download-windows</uri>
     <patterns>
       <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
-      <pattern>(a%2F7z%5B0-9%5D%2B-x64.msi)</pattern>
+      <pattern>(https%3A%2F%2Fbuild.openmodelica.org%2Fomc%2Fbuilds%2Fwindows%2Freleases%2F%5B0-9%5C.%5C%2F%5D%2B%2F)</pattern>
     </patterns>
   </download>
   <!--

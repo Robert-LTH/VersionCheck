@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+        <work>
+                <version />
+        </work>
+    <version>
+        <format>
+	    <pattern>([0-9]{2})([0-9]{3})([0-9]{5})</pattern>
+            <string>{0}.{1}.{2}</string>
+	</format>
+        <unknown>
+            <uri>ftp://ftp.adobe.com/pub/adobe/acrobat/win/AcrobatDC/</uri>
+            <patterns>
+                <pattern>([0-9]{10})</pattern>
+            </patterns>
+            <format>
+			<pattern>([0-9]{2})([0-9]{3})([0-9]{5})</pattern>
+			<string>{0}.{1}.{2}</string>
+	    </format>
+        </unknown>
+                <known>
+                        <pattern>^([0-9\.]+)</pattern>
+                        <format></format>
+                </known>
+        </version>
+        <download>
+                <uri></uri>
+                <patterns>
+                        <pattern></pattern>
+                </patterns>
+        </download>
+</application>
