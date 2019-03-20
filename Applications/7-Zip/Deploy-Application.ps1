@@ -123,8 +123,6 @@ Try {
 		Show-InstallationProgress
 		
 		## <Perform Pre-Installation tasks here>
-		# Old installs which had files locked by the contextmenu is fixed by uninstalling before we begin to install
-		Execute-MSI -Action Uninstall -Path '7z1805-x64.msi'
 		
 		##*===============================================
 		##* INSTALLATION 
