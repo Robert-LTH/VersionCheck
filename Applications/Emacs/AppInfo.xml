@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <!--
+        Select what is enabled for this application, valid options:
+          * version
+          * download
+    -->
+  <work>
+    <version />
+  </work>
+  <version>
+    <!--
+            If the version needs to be formatted before its compared we use the format-tag. If we dont need to do that we need to remove it
+            string with placeholders per group found by pattern
+            URL encoded pattern
+        <format>
+            <string></string>
+            <pattern></pattern>
+        </format>
+        -->
+    <unknown>
+      <uri>http://ftp.gnu.org/gnu/emacs/windows/emacs-26/</uri>
+      <patterns>
+        <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the version -->
+        <pattern>emacs-(%5B0-9%5C.%5D%2B)-i686.zip</pattern>
+      </patterns>
+    </unknown>
+    <!-- We assume that the folders with known versions are in the same folder as this file -->
+    <known>
+      <pattern>^([0-9\.]+)</pattern>
+    </known>
+  </version>
+  <download>
+    <uri>http[s]://url.to.some.software.info</uri>
+    <patterns>
+      <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
+    </patterns>
+  </download>
+</application>
