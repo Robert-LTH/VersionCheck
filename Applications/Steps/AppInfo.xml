@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <!--
+        Select what is enabled for this application, valid options:
+          * version
+          * download
+    -->
+  <work>
+    <version />
+    <download />
+  </work>
+  <version>
+    <unknown>
+    <!--
+            If the version needs to be formatted before its compared we use the format-tag. If we dont need to do that we need to remove it
+            string with placeholders per group found by pattern
+            URL encoded pattern
+    -->
+        <format>
+            <string>{0}.{1}.{2}</string>
+            <pattern>(%5B0-9%5D)_(%5B0-9%5D)_(%5B0-9%5D%2B)</pattern>
+        </format>
+      <uri>https://www.steps.mottmac.com/downloads</uri>
+      <patterns>
+        <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the version -->
+        <pattern>STEPS_(%5B0-9%5D%5B0-9_%5D%2B)+%5C(64</pattern>
+      </patterns>
+    </unknown>
+    <!-- We assume that the folders with known versions are in the same folder as this file -->
+    <known>
+      <pattern>^([0-9\.]+)</pattern>
+    </known>
+  </version>
+  <download>
+    <uri>https://www.steps.mottmac.com/downloads</uri>
+    <patterns>
+      <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
+      <pattern>(https%3A%2F%2Fwww.mottmac.com%2F.*%2Fsteps%5B0-9%5D%2B-64-bitexe)</pattern>
+    </patterns>
+  </download>
+</application>
