@@ -38,4 +38,21 @@
             <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
 		</patterns>
 	</download>
+	<!--
+	<download type="direct">
+		<uri></uri>
+	</download>
+	<download type="fosshub">
+		<project></project>
+		<filter></filter>
+	</download>
+	<download type="sourceforge">
+		<project></project>
+	</download>
+	<download type="github">
+		<owner></owner>
+		<repository></repository>
+		<filter></filter>
+	</download>
+	-->
 </application>
