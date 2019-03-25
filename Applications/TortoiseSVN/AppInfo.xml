@@ -39,6 +39,7 @@
     <patterns>
       <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
       <pattern>(https%3A%2F%2F%5Ba-zA-Z0-9%5C.%5C%2F%5D%2B%2FTortoiseSVN-%5B0-9%5C.%5D%2B-x64-svn-%5B0-9%5C.%5D%2B.msi)</pattern>
+      <pattern>(%2Ffrs%2Fredir.php%5C%3Fm%3D%5Ba-zA-Z0-9%26%3B%3D%25%5C.-%5D%2B)</pattern>
     </patterns>
   </download>
 </application>
