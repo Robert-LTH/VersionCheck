@@ -45,7 +45,8 @@ function Global:Invoke-FindInWebContent {
             if ($Request.StatusCode -eq 200) {
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value  "Request for '$($CurrentUri)' was successful"
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value $Request.Content
-                $MatchedContent = $Request.Content | Get-FirstRegexGroupValue -Pattern ([System.Net.WebUtility]::UrlDecode($_))
+                # Try to parse the data as a string if its delivered as binary
+                $MatchedContent = ([string]::new($Request.Content)) | Get-FirstRegexGroupValue -Pattern ([System.Net.WebUtility]::UrlDecode($_))
                 Write-Debug "$MatchedContent"
                 if (-not [string]::IsNullOrEmpty($MatchedContent)) {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug:'$MatchedContent'"
