@@ -39,6 +39,7 @@
     <patterns>
       <!-- All patterns should return a url which we can use for subsequent requests, the last pattern should return the url to the file which is downloaded -->
       <pattern>(https%3A%2F%2Fwww.libreoffice.org%2Fdonate%2Fdl%2Fwin-x86_64%2F%5B0-9%5C.%5D%2B%2Fen-US%2FLibreOffice_%5B0-9%5C.%5D%2B_Win_x64.msi)</pattern>
+      <pattern>(https%3A%2F%2Fdownload%5C.documentfoundation%5C.org%2Flibreoffice%2Fstable%2F%5B0-9%5C.%5D%2B%2Fwin%2Fx86_64%2FLibreOffice_%5B0-9%5C.%5D%2B_Win_x64%5C.msi)</pattern>
     </patterns>
   </download>
   <!--
