@@ -16,6 +16,7 @@ function Global:Get-WebFile {
         $Return = $false
         try {
             $TempFileName = New-TemporaryFile
+            $Uri = ([System.Net.WebUtility]::UrlDecode($Uri)) -replace '&amp;','&'
             #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $TempFileName
             #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value ($TempFileName.GetType())
             #Write-LogEntry -Component $MyInvocation.MyCommand -Severity 1 -Value $Uri
@@ -60,10 +61,10 @@ function Global:Get-WebFile {
                 }
             }
             else {
-                Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "Something went wrong: $Data.Content"
+                Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "Tried to fetch: '$Uri' but wrong StatusCode: $Data.Content"
             }
         } catch {
-            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "Something went wrong! $_"
+            Write-LogEntry -Component $MyInvocation.MyCommand -Severity 3 -Value "Tried to fetch: '$Uri' but something went wrong: $_"
         }
     }
     end {
