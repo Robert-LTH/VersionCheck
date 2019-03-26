@@ -82,7 +82,10 @@ function Global:Invoke-DownloadUnknownVersion {
                 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Removed '$UnknownVersionFolder', aborting due to error."
                 return
             }
-
+            $UnknownVersionFiles = Get-ChildItem -Path "$UnknownVersionFolder\Files\" | Select-Object -ExpandProperty Name
+            if ($UnknownVersionFiles.Count -eq 1 -and $UnknownVersionFiles -match '\.msp') {
+                Write-LogEntry -Severity 1 -Value "The only file in the folder Files is '$UnknownVersionFiles', you might want to copy the full installation into the folder Files too."
+            }
             Write-Output $InputObject
         }
     }

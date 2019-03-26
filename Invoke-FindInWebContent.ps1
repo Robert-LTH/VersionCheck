@@ -27,7 +27,7 @@ function Global:Invoke-FindInWebContent {
             #Invoke-FindInWebContent -Uri $CurrentUri -Pattern ([System.Net.WebUtility]::UrlDecode($_))
             #Write-Information $CurrentUri
             try {
-                #Write-Debug $CurrentUri
+                Write-Debug $CurrentUri
                 $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
             } catch {
                 try {
@@ -45,30 +45,37 @@ function Global:Invoke-FindInWebContent {
             if ($Request.StatusCode -eq 200) {
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value  "Request for '$($CurrentUri)' was successful"
                 #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value $Request.Content
-                # Try to parse the data as a string if its delivered as binary
                 $MatchedContent = ([string]::new($Request.Content)) | Get-FirstRegexGroupValue -Pattern ([System.Net.WebUtility]::UrlDecode($_))
                 Write-Debug "$MatchedContent"
                 if (-not [string]::IsNullOrEmpty($MatchedContent)) {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug:'$MatchedContent'"
                     if ($ReturnUri.IsPresent -eq $true -and $MatchedContent -notmatch '^http') {
-                        $BaseUri = "$($Request.BaseResponse.ResponseUri.Scheme)://$($Request.BaseResponse.ResponseUri.Host)/"
-                        if ($Request.BaseResponse.ResponseUri.PathAndQuery -notcontains $MatchedContent) {
+                        $BaseUri = "$($Request.BaseResponse.ResponseUri.Scheme)://$($Request.BaseResponse.ResponseUri.Host)"
+                        #if ($Request.BaseResponse.ResponseUri.PathAndQuery -notcontains $MatchedContent) {
+                        #    $BaseUri += $Request.BaseResponse.ResponseUri.AbsolutePath
+                        #}
+                        if (-not (Split-Path -Path $MatchedContent -Parent)) {
                             $BaseUri += $Request.BaseResponse.ResponseUri.AbsolutePath
                         }
                         #$BaseUri = $Request.BaseResponse.ResponseUri
-                        $CurrentUri = "$BaseUri$MatchedContent"
+                        $CurrentUri = "$BaseUri$(if ($MatchedContent.SubString(0,1) -ne '/') { '/' })$MatchedContent"
                         #Write-LogEntry -EntryType CMLogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "$i / $($_Patterns.Count)"
                         if ($i -eq ($_Patterns.Count)) {
                             return $CurrentUri
                         }
                     }
                     else {
-                        return $MatchedContent
+                        if ($i -eq ($_Patterns.Count)) {
+                            return $MatchedContent
+                        }
+                        else {
+                            $CurrentUri = $MatchedContent
+                        }
                     }
                 }
-                #else {
-                #    Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug: $($Request.Content)"
-                #}
+                else {
+                    Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug: $($Request.Content)"
+                }
             }
             else {
                 Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "Request for '$($CurrentUri)' failed with status $($Request.StatusCode)"
