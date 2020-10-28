@@ -9,7 +9,11 @@ function Global:Get-AppVersion {
     process {
         if ($Path) {
             #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Local path"
-            $UnformattedString = Get-ChildItem -Directory -Path $Path | ForEach-Object { Get-FirstRegexGroupValue -Content $_.Name -Pattern $AppXmlInfo.pattern } | ForEach-Object { [System.Version]::new($_) } | Sort-Object | Select-Object -Last 1 | ForEach-Object { $_.ToString() }
+            try {
+                $UnformattedString = Get-ChildItem -Directory -Path $Path | ForEach-Object { Get-FirstRegexGroupValue -Content $_.Name -Pattern $AppXmlInfo.pattern } | ForEach-Object { [System.Version]::new($_) } | Sort-Object | Select-Object -Last 1 | ForEach-Object { $_.ToString() }
+            } catch {
+                $UnformattedString = '0.0'
+            }
         }
         elseif ($AppXmlInfo.Uri -match '^ftp') {
             #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "FTP path"
