@@ -31,7 +31,7 @@ function Global:Invoke-FindInWebContent {
                 $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
             } catch {
                 try {
-                    #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Switching to TLS 1.1 and trying again"
+                    Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Switching to TLS 1.1 and trying again"
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11
                     $Request = Invoke-WebRequest -SessionVariable VCSessionVariable -ErrorAction Stop -Uri $CurrentUri -UseBasicParsing
                 } catch {
@@ -50,18 +50,34 @@ function Global:Invoke-FindInWebContent {
                 if (-not [string]::IsNullOrEmpty($MatchedContent)) {
                     #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Debug:'$MatchedContent'"
                     if ($ReturnUri.IsPresent -eq $true -and $MatchedContent -notmatch '^http') {
-                        $BaseUri = "$($Request.BaseResponse.ResponseUri.Scheme)://$($Request.BaseResponse.ResponseUri.Host)"
-                        #if ($Request.BaseResponse.ResponseUri.PathAndQuery -notcontains $MatchedContent) {
-                        #    $BaseUri += $Request.BaseResponse.ResponseUri.AbsolutePath
+                        $BaseUri = "$($Request.BaseResponse.RequestMessage.RequestUri.Scheme)://$($Request.BaseResponse.RequestMessage.RequestUri.Host)"
+                        #if ($Request.BaseResponse.RequestMessage.RequestUri.PathAndQuery -notcontains $MatchedContent) {
+                        #    $BaseUri += $Request.BaseResponse.RequestMessage.RequestUri.AbsolutePath
                         #}
                         if (-not (Split-Path -Path $MatchedContent -Parent)) {
-                            $BaseUri += $Request.BaseResponse.ResponseUri.AbsolutePath
+                            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "ABSOLUTEPATH $($BaseUri + $Request.BaseResponse.RequestMessage.RequestUri.AbsolutePath)"
+                            $BaseUri += $Request.BaseResponse.RequestMessage.RequestUri.AbsolutePath
                         }
-                        #$BaseUri = $Request.BaseResponse.ResponseUri
-                        $CurrentUri = "$BaseUri$(if ($MatchedContent.SubString(0,1) -ne '/') { '/' })$MatchedContent"
+                        if ($MatchedContent.SubString(0,1) -ne '/' -and ($BaseUri.LastIndexOf('/')+1) -ne $BaseUri.Length) {
+                            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "No SLASH $($BaseUri + $MatchedContent)"
+                            $CurrentUri = "$($BaseUri)/$MatchedContent"
+                        }
+                        else {
+                            if ($MatchedContent.SubString(0,2) -eq '//') {
+                                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "CurrentURI: $CurrentURI"
+                                $CurrentUri = $MatchedContent -replace '//',"$($Request.BaseResponse.RequestMessage.RequestUri.Scheme)://"
+                                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "CurrentURI: $CurrentURI"
+                            }
+                            else {
+                                Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "CurrentUri = $BaseUri $MatchedContent"
+                                $CurrentUri = "$($BaseUri)$MatchedContent"
+                            }
+                        }
                         #Write-LogEntry -EntryType CMLogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 3 -Value "$i / $($_Patterns.Count)"
                         if ($i -eq ($_Patterns.Count)) {
-                            return $CurrentUri
+                            $return = ($CurrentUri -replace '[^https:]\/\/','/')
+                            Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "No more patterns, will return $return"
+                            return $return
                         }
                     }
                     else {
