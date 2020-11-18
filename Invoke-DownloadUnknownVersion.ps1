@@ -65,8 +65,8 @@ function Global:Invoke-DownloadUnknownVersion {
                 Invoke-PreparePSADT -Destination $UnknownVersionFolder -PSADTSource $Settings.PSADTSource
                 if ((Test-Path -ErrorAction SilentlyContinue -Path "$KnownVersionFolder\Deploy-Application.ps1")) {
                     Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Copy files from '$KnownVersionFolder'"
-                    Copy-Item -Path "$KnownVersionFolder\Deploy-Application.ps1" -Destination $UnknownVersionFolder
-                    Copy-Item -Path "$KnownVersionFolder\AppDeployToolkit\AppDeployToolkitConfig.xml" -Destination "$UnknownVersionFolder\AppDeployToolkit"
+                    Copy-Item -Path "$KnownVersionFolder\Deploy-Application-*.ps1" -Destination $UnknownVersionFolder
+                    #Copy-Item -Path "$KnownVersionFolder\AppDeployToolkit\AppDeployToolkitConfig.xml" -Destination "$UnknownVersionFolder\AppDeployToolkit"
                     Copy-Item -Recurse -Path "$KnownVersionFolder\SupportFiles\*" -Destination "$UnknownVersionFolder\SupportFiles"
                 }
             }
