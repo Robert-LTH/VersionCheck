@@ -10,7 +10,9 @@ function Global:Get-AppVersion {
         if ($Path) {
             #Write-LogEntry -Component $MyInvocation.MyCommand -FileName $Global:LogFileName -Severity 1 -Value "Local path"
             try {
-                $UnformattedString = Get-ChildItem -Directory -Path $Path | ForEach-Object { Get-FirstRegexGroupValue -Content $_.Name -Pattern $AppXmlInfo.pattern } | ForEach-Object { [System.Version]::new($_) } | Sort-Object | Select-Object -Last 1 | ForEach-Object { $_.ToString() }
+                $UnformattedString = Get-ChildItem -Directory -Path $Path | ForEach-Object {
+                        Get-FirstRegexGroupValue -Content $_.Name -Pattern $AppXmlInfo.pattern
+                    } | Sort-Object -Property @{ Expression = { [System.Version]::new($_) } } | Select-Object -Last 1
             } catch {
                 $UnformattedString = '0.0'
             }
